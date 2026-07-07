@@ -6,7 +6,8 @@ if not hasattr(inspect, 'getargspec'):
         ArgSpec = namedtuple('ArgSpec', ['args', 'varargs', 'keywords', 'defaults'])
         return ArgSpec(full.args, full.varargs, full.varkw, full.defaults)
     inspect.getargspec = getargspec
-    import warnings
+
+import warnings
 warnings.filterwarnings("ignore", category=FutureWarning)
 
 import streamlit as st
@@ -18,6 +19,7 @@ import pypdf
 import docx2txt
 from io import BytesIO
 from docx import Document
+import re
 
 # Universal text extraction engine for PDFs and Word Docs
 def extract_text_from_file(uploaded_file) -> str:
@@ -124,7 +126,7 @@ if st.button("Check 🕵️‍♂️"):
             
             all_resumes_combined_text = "\n".join(resume_manifests)
             
-            # Dynamically alter prompting based on single vs multiple candidates 🧠
+            # Dynamically alter prompting based on single vs multiple candidates
             if file_count == 1:
                 verdict_instruction = (
                     "Provide a top section titled '## 🏆 Executive Candidate Summary'. "
@@ -169,7 +171,6 @@ if st.button("Check 🕵️‍♂️"):
         st.table(scoreboard_data)
         
         st.subheader("💾 Export Assessment Intelligence")
-        # Render clean full-width download button for Word
         st.download_button(
             label="📥 Download Full Report as Word (.docx)",
             data=create_docx_report(final_compiled_report),
