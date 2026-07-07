@@ -1,4 +1,12 @@
-import warnings
+import inspect
+if not hasattr(inspect, 'getargspec'):
+    def getargspec(func):
+        full = inspect.getfullargspec(func)
+        from collections import namedtuple
+        ArgSpec = namedtuple('ArgSpec', ['args', 'varargs', 'keywords', 'defaults'])
+        return ArgSpec(full.args, full.varargs, full.varkw, full.defaults)
+    inspect.getargspec = getargspec
+    import warnings
 warnings.filterwarnings("ignore", category=FutureWarning)
 
 import streamlit as st
