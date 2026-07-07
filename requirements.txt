@@ -1,0 +1,6 @@
+streamlit
+phi
+google-generativeai
+pypdf
+docx2txt
+python-docx
