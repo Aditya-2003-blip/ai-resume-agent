@@ -62,7 +62,7 @@ def create_docx_report(text_content: str) -> BytesIO:
 # Single-Pass Master Enterprise Agent 
 master_screener_agent = Agent(
     name="Enterprise Unified Match Engine",
-    model=Gemini(id="gemini-3.1-flash-lite"),
+    model=Gemini(id="gemini-1.5-flash"),
     instructions=[
         "You are an elite corporate technical recruiter and strict ATS evaluation engine.",
         "You must evaluate all submitted resumes against the Target Job Description.",
