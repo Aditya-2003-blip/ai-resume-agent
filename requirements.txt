@@ -1,5 +1,5 @@
 streamlit
-phi
+phidata
 google-generativeai
 pypdf
 docx2txt
