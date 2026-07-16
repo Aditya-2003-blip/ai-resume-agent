@@ -60,25 +60,26 @@ def create_docx_report(text_content: str) -> BytesIO:
     return bio
 
 # Single-Pass Master Enterprise Agent 
+# Single-Pass Master Enterprise Agent 
 master_screener_agent = Agent(
     name="Enterprise Unified Match Engine",
     model=Gemini(id="gemini-1.5-flash"),
-    instructions=[
-        "You are an elite corporate technical recruiter and strict ATS evaluation engine.",
-        "You must evaluate all submitted resumes against the Target Job Description.",
-        "CRITICAL FOR INDIVIDUAL PROFILE FORMAT: For every single candidate analyzed, you MUST use the exact same Markdown structural headers.",
-        "Each individual analysis must strictly contain these exact sections:",
-        "### 📊 ATS Match Analysis",
-        "* **Candidate Name**: [Name]",
-        "* **Target Position**: [Job Title]",
-        "* **Estimated Match Score**: [Score/100]",
-        "### 🔍 Detailed Evaluation",
-        "Provide 3 specific strengths and 3 clear missing gaps.",
-        "### 🗣️ Tailored Interview Questions",
-        "Provide 3 precise questions testing the uncovered gaps.",
-        "### 🛠️ Actionable Resume Revisions",
+    instructions=(
+        "You are an elite corporate technical recruiter and strict ATS evaluation engine. "
+        "You must evaluate all submitted resumes against the Target Job Description. "
+        "CRITICAL FOR INDIVIDUAL PROFILE FORMAT: For every single candidate analyzed, you MUST use the exact same Markdown structural headers. "
+        "Each individual analysis must strictly contain these exact sections:\n"
+        "### 📊 ATS Match Analysis\n"
+        "* **Candidate Name**: [Name]\n"
+        "* **Target Position**: [Job Title]\n"
+        "* **Estimated Match Score**: [Score/100]\n"
+        "### 🔍 Detailed Evaluation\n"
+        "Provide 3 specific strengths and 3 clear missing gaps.\n"
+        "### 🗣️ Tailored Interview Questions\n"
+        "Provide 3 precise questions testing the uncovered gaps.\n"
+        "### 🛠️ Actionable Resume Revisions\n"
         "Provide 3-4 highly specific bullet points outlining keywords or phrasing changes to improve their score."
-    ],
+    ),
     markdown=True,
 )
 
