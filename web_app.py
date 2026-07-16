@@ -13,13 +13,17 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 import streamlit as st
 st.config.set_option("server.maxUploadSize", 1024)
 
-from phi.agent import Agent
-from phi.model.google import Gemini
+import google.generativeai as genai
+import os
 import pypdf
 import docx2txt
 from io import BytesIO
 from docx import Document
-import re
+
+# Fetch API key directly from Streamlit secrets environment
+api_key = st.secrets.get("GOOGLE_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+if api_key:
+    genai.configure(api_key=api_key)
 
 # Universal text extraction engine for PDFs and Word Docs
 def extract_text_from_file(uploaded_file) -> str:
@@ -59,30 +63,6 @@ def create_docx_report(text_content: str) -> BytesIO:
     bio.seek(0)
     return bio
 
-# Single-Pass Master Enterprise Agent 
-# Single-Pass Master Enterprise Agent 
-master_screener_agent = Agent(
-    name="Enterprise Unified Match Engine",
-    model=Gemini(id="gemini-1.5-flash"),
-    instructions=(
-        "You are an elite corporate technical recruiter and strict ATS evaluation engine. "
-        "You must evaluate all submitted resumes against the Target Job Description. "
-        "CRITICAL FOR INDIVIDUAL PROFILE FORMAT: For every single candidate analyzed, you MUST use the exact same Markdown structural headers. "
-        "Each individual analysis must strictly contain these exact sections:\n"
-        "### 📊 ATS Match Analysis\n"
-        "* **Candidate Name**: [Name]\n"
-        "* **Target Position**: [Job Title]\n"
-        "* **Estimated Match Score**: [Score/100]\n"
-        "### 🔍 Detailed Evaluation\n"
-        "Provide 3 specific strengths and 3 clear missing gaps.\n"
-        "### 🗣️ Tailored Interview Questions\n"
-        "Provide 3 precise questions testing the uncovered gaps.\n"
-        "### 🛠️ Actionable Resume Revisions\n"
-        "Provide 3-4 highly specific bullet points outlining keywords or phrasing changes to improve their score."
-    ),
-    markdown=True,
-)
-
 # --- STREAMLIT WORKSPACE ARCHITECTURE ---
 st.set_page_config(page_title="Enterprise AI ATS Dashboard", page_icon="📈", layout="wide")
 
@@ -111,7 +91,9 @@ job_description_input = st.text_area(
 )
 
 if st.button("Check 🕵️‍♂️"):
-    if not uploaded_files:
+    if not api_key:
+        st.error("⚠️ Configuration missing: GOOGLE_API_KEY is not set in Streamlit Advanced Secrets.")
+    elif not uploaded_files:
         st.warning("⚠️ Action required: Please upload at least one resume profile in the sidebar.")
     elif not job_description_input.strip():
         st.warning("⚠️ Action required: Please supply a Target Job Specification.")
@@ -142,6 +124,20 @@ if st.button("Check 🕵️‍♂️"):
                 )
                 
             master_prompt = (
+                f"You are an elite corporate technical recruiter and strict ATS evaluation engine. "
+                f"You must evaluate all submitted resumes against the Target Job Description.\n\n"
+                f"CRITICAL FOR INDIVIDUAL PROFILE FORMAT: For every single candidate analyzed, you MUST use the exact same Markdown structural headers. "
+                f"Each individual analysis must strictly contain these exact sections:\n"
+                f"### 📊 ATS Match Analysis\n"
+                f"* **Candidate Name**: [Name]\n"
+                f"* **Target Position**: [Job Title]\n"
+                f"* **Estimated Match Score**: [Score/100]\n"
+                f"### 🔍 Detailed Evaluation\n"
+                f"Provide 3 specific strengths and 3 clear missing gaps.\n"
+                f"### 🗣️ Tailored Interview Questions\n"
+                f"Provide 3 precise questions testing the uncovered gaps.\n"
+                f"### 🛠️ Actionable Resume Revisions\n"
+                f"Provide 3-4 highly specific bullet points outlining keywords or phrasing changes to improve their score.\n\n"
                 f"TASK:\n"
                 f"1. Read all candidate resumes below.\n"
                 f"2. {verdict_instruction}\n"
@@ -150,8 +146,10 @@ if st.button("Check 🕵️‍♂️"):
                 f"CANDIDATE RESUMES TO PROCESS:\n{all_resumes_combined_text}"
             )
             
-            response = master_screener_agent.run(master_prompt)
-            final_compiled_report = response.content
+            # Native direct call using Google's official stable generativeai SDK
+            model = genai.GenerativeModel("gemini-1.5-flash")
+            response = model.generate_content(master_prompt)
+            final_compiled_report = response.text
             
             # Metrics parsing logic for the scoreboard
             scoreboard_data = []
