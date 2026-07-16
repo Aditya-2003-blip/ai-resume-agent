@@ -1,6 +1,7 @@
 streamlit
 phidata
-google-generativeai
+google-genai
 pypdf
 docx2txt
 python-docx
+
