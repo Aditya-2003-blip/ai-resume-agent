@@ -147,7 +147,7 @@ if st.button("Check 🕵️‍♂️"):
             )
             
             # Native direct call using Google's official stable generativeai SDK
-            model = genai.GenerativeModel("gemini-1.5-flash")
+            model = genai.GenerativeModel("gemini-2.5-flash")
             response = model.generate_content(master_prompt)
             final_compiled_report = response.text
             
