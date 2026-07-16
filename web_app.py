@@ -13,17 +13,23 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 import streamlit as st
 st.config.set_option("server.maxUploadSize", 1024)
 
-import google.generativeai as genai
+from google import genai
 import os
 import pypdf
 import docx2txt
 from io import BytesIO
 from docx import Document
 
-# Fetch API key directly from Streamlit secrets environment
-api_key = st.secrets.get("GOOGLE_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+# Initialize the Gemini client using Google Gen AI SDK
+api_key = st.secrets.get("GOOGLE_API_KEY") or os.environ.get("GOOGLE_API_KEY") or os.environ.get("GEMINI_API_KEY")
+client = None
 if api_key:
-    genai.configure(api_key=api_key)
+    client = genai.Client(api_key=api_key)
+else:
+    try:
+        client = genai.Client()
+    except Exception:
+        client = None
 
 # Universal text extraction engine for PDFs and Word Docs
 def extract_text_from_file(uploaded_file) -> str:
@@ -91,8 +97,8 @@ job_description_input = st.text_area(
 )
 
 if st.button("Check 🕵️‍♂️"):
-    if not api_key:
-        st.error("⚠️ Configuration missing: GOOGLE_API_KEY is not set in Streamlit Advanced Secrets.")
+    if not client:
+        st.error("⚠️ Configuration missing: GOOGLE_API_KEY or GEMINI_API_KEY is not set.")
     elif not uploaded_files:
         st.warning("⚠️ Action required: Please upload at least one resume profile in the sidebar.")
     elif not job_description_input.strip():
@@ -146,9 +152,11 @@ if st.button("Check 🕵️‍♂️"):
                 f"CANDIDATE RESUMES TO PROCESS:\n{all_resumes_combined_text}"
             )
             
-            # Native direct call using Google's official stable generativeai SDK
-            model = genai.GenerativeModel("models/gemini-1.5-flash")
-            response = model.generate_content(master_prompt)
+            # Unified direct call using the new Google Gen AI SDK
+            response = client.models.generate_content(
+                model="gemini-1.5-flash",
+                contents=master_prompt
+            )
             final_compiled_report = response.text
             
             # Metrics parsing logic for the scoreboard
